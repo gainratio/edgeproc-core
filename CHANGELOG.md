@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Security
+- **The release candidate is back to the fleet's shell-free shape: checkout, Dagger,
+  upload.** The central `hseshadr/ci` fleet policy forbids `run:` steps and reported
+  `shell-step` and `candidate-order` on `release-candidate.yml`. The dispatched tag still
+  never reaches script text. It enters the pinned `dagger/dagger-for-github` step only as the
+  `TAG` environment variable, and `args` hold only double-quoted variables
+  (`--tag="$TAG" --commit-sha="$GITHUB_SHA"`), so bash expands the tag as one inert word.
+  The separate `vX.Y.Z` shell guard is gone, because Dagger already rejects a requested tag
+  that differs from the verified candidate's tag. `tests/test_workflow_security.py` now
+  expands the real `args` in bash with hostile tags and asserts that each one arrives as a
+  single literal argument and runs nothing.
 - **The PyPI publisher now proves the candidate's lineage before it touches any artifact.**
   `publish.yml` published the `workflow_run` artifact gated only on
   `workflow_run.head_branch == default_branch`, which a dispatch on a **tag** named
@@ -20,6 +30,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   every clause.
 
 ### Changed
+- **The README is rewritten in plain English.** It now opens with one plain sentence, the
+  install line, the problem it solves, a walkthrough with real output from 0.4.3 on PyPI, how it
+  relates to edge-proc, edge-reco, `@edgeproc/browser` and privacy-core, and honest limits. The
+  technical material (routing, strategies, conformance suite, error module, configuration,
+  security model, coverage and benchmark figures) moved to the new `docs/ARCHITECTURE.md`, and
+  the new `docs/GETTING_STARTED.md` takes a developer from a fresh clone to a first change. The
+  README contract test now pins the new section order and a banned-jargon list; the coverage and
+  benchmark checks now read `docs/ARCHITECTURE.md`. The `pyproject.toml` description matches the
+  new first line. PyPI shows the new README from the next release.
 - **The README follows the portfolio template.** Its first screen is written for a
   non-specialist: a plain tagline, a hero that is the real output of a 15-line example run
   against `edgeproc-core` 0.4.3 from PyPI (two customers forced into one shared index, and
