@@ -94,3 +94,60 @@ def test_should_use_exception_str_as_text_when_no_message_attribute() -> None:
     # When its text is read
     # Then the exception's str() is used
     assert error_text_of(ConnectionError("Connection refused")) == "Connection refused"
+
+
+def test_should_read_status_from_a_nested_response() -> None:
+    # Given an exception that carries its response, like requests.HTTPError
+    raw = SimpleNamespace(response=SimpleNamespace(status_code=402))
+    # When the status is read
+    # Then the response's status is used
+    assert http_status_of(raw) == 402
+
+
+def test_should_read_status_attr_from_a_nested_response() -> None:
+    # Given a wrapper whose response is fetch-style, with .status
+    raw = SimpleNamespace(response=SimpleNamespace(status=503))
+    # When the status is read
+    # Then the response's .status is used
+    assert http_status_of(raw) == 503
+
+
+def test_should_read_status_from_a_nested_response_mapping() -> None:
+    # Given a mapping that carries a response mapping
+    # When the status is read
+    # Then the nested mapping's status is used
+    assert http_status_of({"response": {"status": 429}}) == 429
+
+
+def test_should_return_none_when_nested_response_has_no_status() -> None:
+    # Given a wrapper whose response carries no status
+    raw = SimpleNamespace(response=SimpleNamespace(body="oops"))
+    # When the status is read
+    # Then None is returned
+    assert http_status_of(raw) is None
+
+
+def test_should_prefer_the_direct_status_over_a_nested_response() -> None:
+    # Given a raw with its own status and a different one on its response
+    raw = SimpleNamespace(status_code=429, response=SimpleNamespace(status_code=500))
+    # When the status is read
+    # Then the direct status wins
+    assert http_status_of(raw) == 429
+
+
+def test_should_not_loop_when_response_points_at_itself() -> None:
+    # Given a raw whose response is itself
+    raw = SimpleNamespace()
+    raw.response = raw
+    # When the status is read
+    # Then it terminates with None
+    assert http_status_of(raw) is None
+
+
+def test_should_not_loop_when_two_responses_point_at_each_other() -> None:
+    # Given two raws whose responses form a cycle
+    first, second = SimpleNamespace(), SimpleNamespace()
+    first.response, second.response = second, first
+    # When the status is read
+    # Then it terminates with None
+    assert http_status_of(first) is None

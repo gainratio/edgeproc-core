@@ -13,6 +13,7 @@ from typing import TypeGuard
 
 _STATUS_KEYS = ("status_code", "status")
 _TEXT_KEYS = ("message", "body")
+_MAX_RESPONSE_HOPS = 3  # bounds the walk, so a cyclic ``.response`` cannot loop forever
 
 
 def _read(raw: object, key: str) -> object:
@@ -29,12 +30,27 @@ def _is_status(value: object) -> TypeGuard[int]:
     return isinstance(value, int) and not isinstance(value, bool)
 
 
-def http_status_of(raw: object) -> int | None:
-    """The numeric HTTP status on a raw failure (httpx/requests/fetch), or ``None``."""
+def _direct_status(raw: object) -> int | None:
+    """The status on ``raw`` itself (``status_code`` first, then ``status``), or ``None``."""
     for key in _STATUS_KEYS:
         value = _read(raw, key)
         if _is_status(value):
             return value
+    return None
+
+
+def http_status_of(raw: object) -> int | None:
+    """The numeric HTTP status on a raw failure (httpx/requests/fetch), or ``None``.
+
+    A status on ``raw`` itself wins. Otherwise follow a nested ``response`` (the shape of
+    ``requests.HTTPError`` and ``httpx.HTTPStatusError``), at most ``_MAX_RESPONSE_HOPS`` deep.
+    """
+    current = raw
+    for _ in range(_MAX_RESPONSE_HOPS + 1):
+        status = _direct_status(current)
+        if status is not None:
+            return status
+        current = _read(current, "response")
     return None
 
 
