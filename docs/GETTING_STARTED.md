@@ -56,7 +56,7 @@ and a check that every import shown in the docs works against a freshly built wh
 From a fresh clone it took 45 seconds; later runs take about 15. Success looks like:
 
 ```text
-Required test coverage of 90% reached. Total coverage: 99.31%
+Required test coverage of 90% reached. Total coverage: 99.32%
 ============================= 380 passed in 15.00s =============================
 ...
 OK: ARCHITECTURE.md coverage claims match the measured run.
@@ -102,11 +102,14 @@ uv run poe typecheck   # mypy --strict
 
 ## 5. Make your first change
 
-A typical small change: teach the error module to read an HTTP status from an exception that
-carries its response, the way `requests.HTTPError` does (`err.response.status_code`). Today
-`http_status_of` only looks at the top-level object.
+A typical small change is the one that taught the error module to read an HTTP status from an
+exception that carries its response, the way `requests.HTTPError` does
+(`err.response.status_code`). Its finished tests are at the end of `tests/test_errors_raw.py`, and
+the code is `http_status_of` in `edgeproc_core/errors/raw.py`. Follow the same steps for your
+own change.
 
-Branch, then write the failing test first. Add this to the end of `tests/test_errors_raw.py`:
+Branch, then write the failing test first. For example, a test that reads the status from a
+nested response:
 
 ```python
 def test_should_read_status_from_a_nested_response() -> None:
@@ -117,23 +120,19 @@ def test_should_read_status_from_a_nested_response() -> None:
     assert http_status_of(raw) == 402
 ```
 
-Run just that file and watch it fail:
+Run just that file and watch it fail for the right reason (the function returns `None`):
 
 ```bash
 git checkout -b fix/status-from-nested-response
 uv run pytest tests/test_errors_raw.py -q --no-cov
 # FAILED tests/test_errors_raw.py::test_should_read_status_from_a_nested_response
-# 1 failed, 11 passed
 ```
 
-Then make the smallest change in `edgeproc_core/errors/raw.py`, at the end of `http_status_of`:
+Then make the smallest change that turns it green, and add the edge cases a reviewer will ask
+about (here: a direct status still wins, and a `response` that points back at itself must not
+loop, so the walk is bounded).
 
-```python
-    response = _read(raw, "response")
-    return None if response is None else http_status_of(response)
-```
-
-Run the file again (12 passed), then `uv run poe gate`. Add a line under `[Unreleased]` in
+Run the file again until it is green, then `uv run poe gate`. Add a line under `[Unreleased]` in
 [CHANGELOG.md](../CHANGELOG.md). Before opening a PR for a change like this one, check the
 TypeScript twin, [@edgeproc/errors](https://github.com/hseshadr/errors): the error codes and
 their matching rules are meant to behave the same in both languages.

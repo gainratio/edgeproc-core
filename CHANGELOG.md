@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **`http_status_of` now follows a nested `response`.** Exceptions such as `requests.HTTPError`
+  and `httpx.HTTPStatusError` keep the status at `exc.response.status_code`, so
+  `Registry.classify` never saw it. A status on the object itself still wins, the walk stops
+  after three hops, and a `response` that points back at itself returns `None` instead of
+  looping.
+
 ### Security
 - **The release candidate is back to the fleet's shell-free shape: checkout, Dagger,
   upload.** The central `hseshadr/ci` fleet policy forbids `run:` steps and reported
