@@ -16,7 +16,7 @@ from edgeproc_core.main import EdgeprocCore
 
 ROOT = Path(__file__).parents[2]
 COMMIT_SHA = "a" * 40
-EXPECTED_CENTRAL_SHA = "9d491851fc5c65ad4a388ed2dd7bb4def4e1f007"
+EXPECTED_CENTRAL_SHA = "a895f726e9786bcfd2bdf68f87d3d5c4b411f702"
 
 
 class RecordingWorkspace:
