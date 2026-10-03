@@ -8,6 +8,7 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: "uv"
     directory: "/"
@@ -16,3 +17,4 @@ updates:
     groups:
       python-deps:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
