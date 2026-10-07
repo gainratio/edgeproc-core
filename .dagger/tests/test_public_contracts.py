@@ -18,8 +18,9 @@ ROOT = Path(__file__).parents[2]
 COMMIT_SHA = "a" * 40
 EXPECTED_CENTRAL_SHA = "a88866232e679b6353d2b75bceb01969be739f67"
 
-#: The repository as GitHub reports it today, and after the planned transfer to the org.
-ALLOWED = ("hseshadr/edgeproc-core", "gainratio/edgeproc-core")
+#: The repository as GitHub reports it since the org transfer, and its pre-transfer name.
+CANONICAL = "gainratio/edgeproc-core"
+ALLOWED = (CANONICAL, "hseshadr/edgeproc-core")
 
 #: A fork, a sibling repository, a look-alike name, a look-alike owner, and nothing.
 REFUSED = (
@@ -227,11 +228,11 @@ def test_should_delegate_dependency_audit_to_shared_python_package(
     monkeypatch.setattr(main, "_python_package", lambda: package)
 
     # When
-    actual = graph.dependency_audit(COMMIT_SHA)
+    actual = graph.dependency_audit(COMMIT_SHA, CANONICAL)
 
     # Then
     assert actual is package.audit
-    assert package.calls == [("dependency_audit", (source, "hseshadr/edgeproc-core", COMMIT_SHA))]
+    assert package.calls == [("dependency_audit", (source, CANONICAL, COMMIT_SHA))]
 
 
 @pytest.mark.parametrize("repository", ALLOWED)
@@ -300,7 +301,7 @@ def test_should_project_authenticated_artifact_into_existing_publisher_shape(
 
     # When
     actual = asyncio.run(
-        graph.release_candidate("v0.4.2", COMMIT_SHA, cast(dagger.Secret, object()))
+        graph.release_candidate("v0.4.2", COMMIT_SHA, cast(dagger.Secret, object()), CANONICAL)
     )
 
     # Then
@@ -340,7 +341,7 @@ def test_should_require_typed_secret_for_hosted_release_eligibility() -> None:
     assert result is dagger.Directory
 
 
-def test_should_default_to_the_repository_identity_used_today() -> None:
+def test_should_have_no_default_identity_to_fall_back_on() -> None:
     # Given
     names = ("ci", "quality", "dependency_audit", "release_candidate")
 
@@ -350,8 +351,9 @@ def test_should_default_to_the_repository_identity_used_today() -> None:
         for name in names
     }
 
-    # Then
-    assert defaults == {"hseshadr/edgeproc-core"}
+    # Then every gate must be told the run's own repository
+    assert defaults == {inspect.Parameter.empty}
+    assert not hasattr(main, "DEFAULT_REPOSITORY")
     assert main.ALLOWED_REPOSITORIES == ALLOWED
 
 

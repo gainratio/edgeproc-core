@@ -16,10 +16,10 @@ UV_IMAGE: Final = (
     "df4cae8f3a96d175e2e5f992e597550000edbe78fdc2594d5cd8de1a217f504c"
 )
 GIT_PACKAGE: Final = "git=1:2.47.3-0+deb13u1"
-#: The repository as GitHub reports it today; the default keeps existing callers exact.
-DEFAULT_REPOSITORY: Final = "hseshadr/edgeproc-core"
-#: The only identities a run may claim: this repository today, and after the org transfer.
-ALLOWED_REPOSITORIES: Final = ("hseshadr/edgeproc-core", "gainratio/edgeproc-core")
+#: The only identities a run may claim: this repository since the org transfer, and its
+#: pre-transfer name. There is deliberately no default: every gate takes the run's own
+#: `github.repository`, so a caller that drops the flag fails instead of gating as a guess.
+ALLOWED_REPOSITORIES: Final = ("gainratio/edgeproc-core", "hseshadr/edgeproc-core")
 PROJECT_NAME: Final = "edgeproc-core"
 CENTRAL_MODULE_SHA: Final = "a88866232e679b6353d2b75bceb01969be739f67"
 SOURCE_EXCLUDES: Final = [
@@ -130,24 +130,20 @@ class EdgeprocCore:
         return instance
 
     @function
-    async def quality(
-        self, commit_sha: str, repository: str = DEFAULT_REPOSITORY
-    ) -> dagger.Container:
+    async def quality(self, commit_sha: str, repository: str) -> dagger.Container:
         """Return product quality after exact source binding and the shared guard."""
         repository = _allowed_repository(repository)
         complete = await self._verified_source(self.source, commit_sha, repository)
         return self._quality(complete)
 
     @function
-    def dependency_audit(
-        self, commit_sha: str, repository: str = DEFAULT_REPOSITORY
-    ) -> dagger.Container:
+    def dependency_audit(self, commit_sha: str, repository: str) -> dagger.Container:
         """Audit the bound frozen graph through the shared Python package Lego."""
         return self._dependency_audit(commit_sha, _allowed_repository(repository))
 
     @function
     @check
-    async def ci(self, commit_sha: str, repository: str = DEFAULT_REPOSITORY) -> str:
+    async def ci(self, commit_sha: str, repository: str) -> str:
         """Run the canonical release gate sequentially to bound runner memory."""
         repository = _allowed_repository(repository)
         complete = await self._verified_source(self.source, commit_sha, repository)
@@ -162,7 +158,7 @@ class EdgeprocCore:
     @function(cache="never")  # type: ignore[call-overload,untyped-decorator]  # SDK stub gap
     async def release_candidate(
         self, tag: str, commit_sha: str, github_token: dagger.Secret,
-        repository: str = DEFAULT_REPOSITORY,
+        repository: str,
     ) -> dagger.Directory:
         """Build one exact, verified Foundation envelope without publishing it."""
         repository = _allowed_repository(repository)

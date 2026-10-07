@@ -29,6 +29,13 @@ IMPORT_PACKAGE = "edgeproc_core"
 #: stale URL can sit in the docs for months without anyone noticing a 404.
 #: Pinning the canonical name here makes every documented URL fail loudly instead.
 REPO_SLUG = "edgeproc-core"
+#: The owner since the 2026-10 org transfer. GitHub redirects `hseshadr/edgeproc-core`,
+#: so a stale owner never 404s either; it just names an account that no longer owns it.
+OWNER = "gainratio"
+STALE_OWNER = "hseshadr"
+CANONICAL_REPOSITORY = f"https://github.com/{OWNER}/{REPO_SLUG}"
+#: CHANGELOG link references are release history and keep the owner they shipped under.
+CHANGELOG_REPOSITORY = f"https://github.com/{STALE_OWNER}/{REPO_SLUG}"
 
 #: Docs that carry user-facing install commands.
 INSTALL_DOCS = ("README.md", "docs/installation-guide.md")
@@ -234,9 +241,25 @@ def test_no_public_surface_carries_the_pre_rename_repo_slug() -> None:
 
     assert not offenders, (
         f"Public surfaces still carry the pre-rename slug {STALE_REPO_SLUG!r}: "
-        f"{offenders}. The canonical repository is "
-        f"https://github.com/hseshadr/{REPO_SLUG}."
+        f"{offenders}. The canonical repository is {CANONICAL_REPOSITORY}."
     )
+
+
+#: Shipped surfaces outside the docs that name the repository by URL.
+OWNED_SURFACES = (
+    *PUBLIC_SURFACES,
+    "edgeproc_core/__init__.py",
+    "docs/architecture/runtime.architecture.json",
+    "docs/architecture/index.html",
+)
+
+
+def test_no_public_surface_names_the_pre_transfer_owner() -> None:
+    """The repository moved to `gainratio`; every shipped URL must say so."""
+    stale = f"{STALE_OWNER}/{REPO_SLUG}"
+    offenders = [doc for doc in OWNED_SURFACES if stale in _read(doc)]
+
+    assert not offenders, f"{offenders} still name {stale}; use {CANONICAL_REPOSITORY}."
 
 
 def test_package_metadata_urls_point_at_the_canonical_repository() -> None:
@@ -245,9 +268,9 @@ def test_package_metadata_urls_point_at_the_canonical_repository() -> None:
 
     assert urls, "pyproject declares no [project.urls]; PyPI would show no links at all"
     for label, url in urls.items():
-        assert f"github.com/hseshadr/{REPO_SLUG}" in url, (
+        assert url.startswith(CANONICAL_REPOSITORY), (
             f"[project.urls] {label} = {url!r} does not point at the canonical "
-            f"repository https://github.com/hseshadr/{REPO_SLUG}."
+            f"repository {CANONICAL_REPOSITORY}."
         )
 
 
@@ -576,7 +599,7 @@ def test_changelog_links_continue_from_the_current_release() -> None:
     """
     version = tomllib.loads(_read("pyproject.toml"))["project"]["version"]
     changelog = _read("CHANGELOG.md")
-    repository = f"https://github.com/hseshadr/{REPO_SLUG}"
+    repository = CHANGELOG_REPOSITORY
     released = _released_versions_newest_first()
 
     assert released[:1] == [version], (
@@ -593,7 +616,7 @@ def test_every_released_section_carries_a_link_reference() -> None:
     released = _released_versions_newest_first()
     assert len(released) >= 2, f"changelog parse found {len(released)} releases"
     changelog = _read("CHANGELOG.md")
-    prefix = f"https://github.com/hseshadr/{REPO_SLUG}/"
+    prefix = f"{CHANGELOG_REPOSITORY}/"
     missing = [v for v in released if f"[{v}]: {prefix}" not in changelog]
     assert not missing, f"released sections with no link reference: {missing}"
 

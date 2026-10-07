@@ -8,7 +8,7 @@ The bottom layer of the edge-reco / edge-proc stack. Two independent modules:
 - :mod:`edgeproc_core.errors` — canonical error codes: classify raw failures
   into stable codes, describe them, serialize to RFC 9457 Problem Details.
 
-Homepage: https://github.com/hseshadr/edgeproc-core
+Homepage: https://github.com/gainratio/edgeproc-core
 """
 
 from importlib.metadata import PackageNotFoundError, version
