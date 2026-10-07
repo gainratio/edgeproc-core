@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Final, Self
 
 import dagger
@@ -15,10 +16,12 @@ UV_IMAGE: Final = (
     "df4cae8f3a96d175e2e5f992e597550000edbe78fdc2594d5cd8de1a217f504c"
 )
 GIT_PACKAGE: Final = "git=1:2.47.3-0+deb13u1"
-REPOSITORY: Final = "hseshadr/edgeproc-core"
-REPOSITORY_URL: Final = f"https://github.com/{REPOSITORY}.git"
+#: The repository as GitHub reports it today; the default keeps existing callers exact.
+DEFAULT_REPOSITORY: Final = "hseshadr/edgeproc-core"
+#: The only identities a run may claim: this repository today, and after the org transfer.
+ALLOWED_REPOSITORIES: Final = ("hseshadr/edgeproc-core", "gainratio/edgeproc-core")
 PROJECT_NAME: Final = "edgeproc-core"
-CENTRAL_MODULE_SHA: Final = "4d48302e30d3a54ec71364d43aada5c0d4b1f9bf"
+CENTRAL_MODULE_SHA: Final = "a88866232e679b6353d2b75bceb01969be739f67"
 SOURCE_EXCLUDES: Final = [
     ".git",
     ".venv",
@@ -52,6 +55,23 @@ OWNERSHIP_COMMAND: Final = [
 ]
 
 
+def _allowed_repository(repository: str) -> str:
+    """Return the run's repository only when it exactly matches one allowed identity."""
+    if repository not in ALLOWED_REPOSITORIES:
+        raise ValueError(f"{repository!r} is not an allowed edgeproc-core repository")
+    return repository
+
+
+@dataclass(frozen=True)
+class _Lineage:
+    """One release candidate's exact repository, commit, and green-run identity."""
+
+    repository: str
+    commit_sha: str
+    workflow_run_id: str
+    run_attempt: int
+
+
 def _foundation() -> dagger.Foundation:
     """Return the exact-SHA generated Foundation dependency."""
     return dag.foundation()
@@ -62,34 +82,35 @@ def _python_package() -> dagger.PythonPackage:
     return dag.python_package()
 
 
-def _history(commit_sha: str) -> dagger.Directory:
+def _history(commit_sha: str, repository: str) -> dagger.Directory:
     """Return canonical Git metadata for the already-verified commit."""
-    return dag.git(REPOSITORY_URL).commit(commit_sha).tree(depth=0, include_tags=True)
+    return (
+        dag.git(f"https://github.com/{repository}.git")
+        .commit(commit_sha)
+        .tree(depth=0, include_tags=True)
+    )
 
 
-def _with_history(source: dagger.Directory, commit_sha: str) -> dagger.Directory:
+def _with_history(source: dagger.Directory, commit_sha: str, repository: str) -> dagger.Directory:
     """Overlay the verified caller snapshot onto exact-commit Git metadata."""
-    metadata = _history(commit_sha).filter(include=[".git", ".git/**"])
+    metadata = _history(commit_sha, repository).filter(include=[".git", ".git/**"])
     return metadata.with_directory("/", source)
 
 
 # fmt: off
 def _create_candidate(
-    source: dagger.Directory, token: dagger.Secret, commit_sha: str,
-    workflow_run_id: str, run_attempt: int,
+    source: dagger.Directory, token: dagger.Secret, lineage: _Lineage,
 ) -> dagger.PythonPackageCandidate:
     return _python_package().candidate(
-        source, token, REPOSITORY, commit_sha, PROJECT_NAME,
-        CENTRAL_MODULE_SHA, workflow_run_id, run_attempt,
+        source, token, lineage.repository, lineage.commit_sha, PROJECT_NAME,
+        CENTRAL_MODULE_SHA, lineage.workflow_run_id, lineage.run_attempt,
     )
 
 
-def _verify_candidate(
-    envelope: dagger.Directory, commit_sha: str, workflow_run_id: str, run_attempt: int,
-) -> dagger.Directory:
+def _verify_candidate(envelope: dagger.Directory, lineage: _Lineage) -> dagger.Directory:
     verified = _python_package().verify_candidate(
-        envelope, REPOSITORY, commit_sha, PROJECT_NAME,
-        CENTRAL_MODULE_SHA, workflow_run_id, run_attempt,
+        envelope, lineage.repository, lineage.commit_sha, PROJECT_NAME,
+        CENTRAL_MODULE_SHA, lineage.workflow_run_id, lineage.run_attempt,
     )
     return verified.envelope()
 # fmt: on
@@ -109,40 +130,47 @@ class EdgeprocCore:
         return instance
 
     @function
-    async def quality(self, commit_sha: str) -> dagger.Container:
+    async def quality(
+        self, commit_sha: str, repository: str = DEFAULT_REPOSITORY
+    ) -> dagger.Container:
         """Return product quality after exact source binding and the shared guard."""
-        complete = await self._verified_source(self.source, commit_sha)
+        repository = _allowed_repository(repository)
+        complete = await self._verified_source(self.source, commit_sha, repository)
         return self._quality(complete)
 
     @function
-    def dependency_audit(self, commit_sha: str) -> dagger.Container:
+    def dependency_audit(
+        self, commit_sha: str, repository: str = DEFAULT_REPOSITORY
+    ) -> dagger.Container:
         """Audit the bound frozen graph through the shared Python package Lego."""
-        return self._dependency_audit(commit_sha)
+        return self._dependency_audit(commit_sha, _allowed_repository(repository))
 
     @function
     @check
-    async def ci(self, commit_sha: str) -> str:
+    async def ci(self, commit_sha: str, repository: str = DEFAULT_REPOSITORY) -> str:
         """Run the canonical release gate sequentially to bound runner memory."""
-        complete = await self._verified_source(self.source, commit_sha)
+        repository = _allowed_repository(repository)
+        complete = await self._verified_source(self.source, commit_sha, repository)
         await self._run_product_gate(complete)
-        await self._dependency_audit(commit_sha).sync()
+        await self._dependency_audit(commit_sha, repository).sync()
         return "EdgeProc Core canonical Dagger gate passed"
 
-    def _dependency_audit(self, commit_sha: str) -> dagger.Container:
-        return _python_package().dependency_audit(self.source, REPOSITORY, commit_sha)
+    def _dependency_audit(self, commit_sha: str, repository: str) -> dagger.Container:
+        return _python_package().dependency_audit(self.source, repository, commit_sha)
 
     # fmt: off
     @function(cache="never")  # type: ignore[call-overload,untyped-decorator]  # SDK stub gap
     async def release_candidate(
         self, tag: str, commit_sha: str, github_token: dagger.Secret,
+        repository: str = DEFAULT_REPOSITORY,
     ) -> dagger.Directory:
         """Build one exact, verified Foundation envelope without publishing it."""
-        complete = await self._verified_source(self.source, commit_sha)
+        repository = _allowed_repository(repository)
+        complete = await self._verified_source(self.source, commit_sha, repository)
         await self._run_product_gate(complete)
-        run_id, attempt = await self._green_identity(github_token)
-        envelope = self._candidate_envelope(
-            self.source, github_token, commit_sha, run_id, attempt,
-        )
+        run_id, attempt = await self._green_identity(github_token, repository)
+        lineage = _Lineage(repository, commit_sha, run_id, attempt)
+        envelope = self._candidate_envelope(self.source, github_token, lineage)
         checked = self._require_requested_tag(envelope, tag)
         return checked.directory("artifact")
     # fmt: on
@@ -153,29 +181,27 @@ class EdgeprocCore:
         await benchmark.sync()
 
     @staticmethod
-    async def _verified_source(source: dagger.Directory, commit_sha: str) -> dagger.Directory:
+    async def _verified_source(
+        source: dagger.Directory, commit_sha: str, repository: str
+    ) -> dagger.Directory:
         foundation = _foundation()
-        bound = foundation.source(source, REPOSITORY, commit_sha)
-        await foundation.guard(source, REPOSITORY, commit_sha).sync()
-        return _with_history(bound, commit_sha)
+        bound = foundation.source(source, repository, commit_sha)
+        await foundation.guard(source, repository, commit_sha).sync()
+        return _with_history(bound, commit_sha, repository)
 
     @staticmethod
-    async def _green_identity(token: dagger.Secret) -> tuple[str, int]:
-        evidence = _foundation().green_main(token, REPOSITORY)
+    async def _green_identity(token: dagger.Secret, repository: str) -> tuple[str, int]:
+        evidence = _foundation().green_main(token, repository)
         run_id = await evidence.workflow_run_id()
         attempt = await evidence.run_attempt()
         return run_id, attempt
 
     @staticmethod
     def _candidate_envelope(
-        source: dagger.Directory,
-        token: dagger.Secret,
-        commit_sha: str,
-        workflow_run_id: str,
-        run_attempt: int,
+        source: dagger.Directory, token: dagger.Secret, lineage: _Lineage
     ) -> dagger.Directory:
-        candidate = _create_candidate(source, token, commit_sha, workflow_run_id, run_attempt)
-        return _verify_candidate(candidate.envelope(), commit_sha, workflow_run_id, run_attempt)
+        candidate = _create_candidate(source, token, lineage)
+        return _verify_candidate(candidate.envelope(), lineage)
 
     @staticmethod
     def _require_requested_tag(envelope: dagger.Directory, tag: str) -> dagger.Directory:
