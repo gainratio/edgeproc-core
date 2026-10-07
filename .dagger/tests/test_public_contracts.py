@@ -18,6 +18,18 @@ ROOT = Path(__file__).parents[2]
 COMMIT_SHA = "a" * 40
 EXPECTED_CENTRAL_SHA = "4d48302e30d3a54ec71364d43aada5c0d4b1f9bf"
 
+#: The repository as GitHub reports it today, and after the planned transfer to the org.
+ALLOWED = ("hseshadr/edgeproc-core", "gainratio/edgeproc-core")
+
+#: A fork, a sibling repository, a look-alike name, a look-alike owner, and nothing.
+REFUSED = (
+    "attacker/edgeproc-core",
+    "gainratio/edge-proc",
+    "hseshadr/edgeproc-core-evil",
+    "gainratio-evil/edgeproc-core",
+    "",
+)
+
 
 class RecordingWorkspace:
     """Record the explicit source directory selected by the constructor."""
@@ -172,34 +184,35 @@ def test_should_require_bound_sha_for_every_unprivileged_entrypoint() -> None:
     )
 
 
+@pytest.mark.parametrize("repository", ALLOWED)
 def test_should_bind_snapshot_before_product_quality(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, repository: str
 ) -> None:
     # Given
     foundation = RecordingFoundation()
     history = RecordingDirectory(foundation.security)
-    requested_history: list[str] = []
+    requested_history: list[tuple[str, str]] = []
     source = cast(dagger.Directory, object())
     monkeypatch.setattr(main, "_foundation", lambda: foundation)
     monkeypatch.setattr(
         main,
         "_history",
-        lambda commit_sha: requested_history.append(commit_sha) or history,
+        lambda commit_sha, repo: requested_history.append((commit_sha, repo)) or history,
     )
 
     # When
-    actual = asyncio.run(EdgeprocCore._verified_source(source, COMMIT_SHA))
+    actual = asyncio.run(EdgeprocCore._verified_source(source, COMMIT_SHA, repository))
 
     # Then
     assert actual is history
     assert foundation.security.synced
-    assert requested_history == [COMMIT_SHA]
+    assert requested_history == [(COMMIT_SHA, repository)]
     assert history.guard_synced_when_filtered
     assert history.includes == [".git", ".git/**"]
     assert history.overlay == ("/", foundation.bound)
     assert foundation.calls == [
-        ("source", source, "hseshadr/edgeproc-core", COMMIT_SHA),
-        ("guard", source, "hseshadr/edgeproc-core", COMMIT_SHA),
+        ("source", source, repository, COMMIT_SHA),
+        ("guard", source, repository, COMMIT_SHA),
     ]
 
 
@@ -221,8 +234,9 @@ def test_should_delegate_dependency_audit_to_shared_python_package(
     assert package.calls == [("dependency_audit", (source, "hseshadr/edgeproc-core", COMMIT_SHA))]
 
 
+@pytest.mark.parametrize("repository", ALLOWED)
 def test_should_create_then_verify_closed_candidate_with_same_identity(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, repository: str
 ) -> None:
     # Given
     package = RecordingPythonPackage()
@@ -231,13 +245,14 @@ def test_should_create_then_verify_closed_candidate_with_same_identity(
     monkeypatch.setattr(main, "_python_package", lambda: package)
 
     # When
-    actual = EdgeprocCore._candidate_envelope(source, token, COMMIT_SHA, "6100", 2)
+    lineage = main._Lineage(repository, COMMIT_SHA, "6100", 2)
+    actual = EdgeprocCore._candidate_envelope(source, token, lineage)
 
     # Then
     identity = (
         source,
         token,
-        "hseshadr/edgeproc-core",
+        repository,
         COMMIT_SHA,
         "edgeproc-core",
         EXPECTED_CENTRAL_SHA,
@@ -260,13 +275,13 @@ def test_should_project_authenticated_artifact_into_existing_publisher_shape(
     envelope = RecordingArtifactEnvelope()
     checked_tags: list[str] = []
 
-    async def verified(source: dagger.Directory, _commit_sha: str) -> dagger.Directory:
+    async def verified(source: dagger.Directory, _sha: str, _repo: str) -> dagger.Directory:
         return source
 
     async def product_gate(_graph: EdgeprocCore, _source: dagger.Directory) -> None:
         return None
 
-    async def green_identity(_token: dagger.Secret) -> tuple[str, int]:
+    async def green_identity(_token: dagger.Secret, _repository: str) -> tuple[str, int]:
         return "6100", 2
 
     monkeypatch.setattr(EdgeprocCore, "_verified_source", staticmethod(verified))
@@ -323,3 +338,118 @@ def test_should_require_typed_secret_for_hosted_release_eligibility() -> None:
     assert token is not None
     assert token.annotation is dagger.Secret
     assert result is dagger.Directory
+
+
+def test_should_default_to_the_repository_identity_used_today() -> None:
+    # Given
+    names = ("ci", "quality", "dependency_audit", "release_candidate")
+
+    # When
+    defaults = {
+        inspect.signature(getattr(EdgeprocCore, name)).parameters["repository"].default
+        for name in names
+    }
+
+    # Then
+    assert defaults == {"hseshadr/edgeproc-core"}
+    assert main.ALLOWED_REPOSITORIES == ALLOWED
+
+
+class RecordingGreenFoundation(RecordingFoundation):
+    """Add the green-main evidence the release path reads."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.green_calls: list[str] = []
+
+    def green_main(self, _token: dagger.Secret, repository: str) -> RecordingGreenEvidence:
+        self.green_calls.append(repository)
+        return RecordingGreenEvidence()
+
+
+class RecordingGreenEvidence:
+    """Return one fixed successful workflow identity."""
+
+    async def workflow_run_id(self) -> str:
+        return "6100"
+
+    async def run_attempt(self) -> int:
+        return 2
+
+
+def _recording_graph(
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[EdgeprocCore, RecordingGreenFoundation, RecordingPythonPackage, list[str]]:
+    foundation = RecordingGreenFoundation()
+    package = RecordingPythonPackage()
+    history: list[str] = []
+    overlay = RecordingDirectory(foundation.security)
+    monkeypatch.setattr(main, "_foundation", lambda: foundation)
+    monkeypatch.setattr(main, "_python_package", lambda: package)
+    monkeypatch.setattr(main, "_history", lambda _sha, repo: history.append(repo) or overlay)
+    monkeypatch.setattr(EdgeprocCore, "_run_product_gate", lambda _graph, _source: _done())
+    monkeypatch.setattr(EdgeprocCore, "_quality", lambda _graph, source: source)
+    monkeypatch.setattr(
+        EdgeprocCore, "_require_requested_tag", staticmethod(lambda *_: RecordingArtifactEnvelope())
+    )
+    graph = EdgeprocCore.__new__(EdgeprocCore)
+    graph.source = cast(dagger.Directory, object())
+    return graph, foundation, package, history
+
+
+async def _done() -> None:
+    return None
+
+
+@pytest.mark.parametrize("repository", ALLOWED)
+def test_should_bind_ci_and_release_to_the_runs_own_allowed_repository(
+    monkeypatch: pytest.MonkeyPatch, repository: str
+) -> None:
+    # Given
+    graph, foundation, package, history = _recording_graph(monkeypatch)
+    token = cast(dagger.Secret, object())
+
+    # When
+    asyncio.run(graph.ci(COMMIT_SHA, repository))
+    asyncio.run(graph.release_candidate("v0.4.2", COMMIT_SHA, token, repository))
+
+    # Then
+    assert {call[2] for call in foundation.calls} == {repository}
+    assert history == [repository, repository]
+    assert foundation.green_calls == [repository]
+    assert {arguments[1] for name, arguments in package.calls if name == "dependency_audit"} == {
+        repository
+    }
+    assert {arguments[2] for name, arguments in package.calls if name == "candidate"} == {
+        repository
+    }
+    assert {arguments[1] for name, arguments in package.calls if name == "verify_candidate"} == {
+        repository
+    }
+
+
+def _refused_entrypoints(graph: EdgeprocCore, repository: str) -> dict[str, object]:
+    token = cast(dagger.Secret, object())
+    return {
+        "ci": lambda: asyncio.run(graph.ci(COMMIT_SHA, repository)),
+        "quality": lambda: asyncio.run(graph.quality(COMMIT_SHA, repository)),
+        "audit": lambda: graph.dependency_audit(COMMIT_SHA, repository),
+        "release": lambda: asyncio.run(
+            graph.release_candidate("v0.4.2", COMMIT_SHA, token, repository)
+        ),
+    }
+
+
+@pytest.mark.parametrize("entrypoint", ["ci", "quality", "audit", "release"])
+@pytest.mark.parametrize("repository", REFUSED)
+def test_should_refuse_any_other_repository_before_any_shared_call(
+    monkeypatch: pytest.MonkeyPatch, repository: str, entrypoint: str
+) -> None:
+    # Given
+    graph, foundation, package, history = _recording_graph(monkeypatch)
+    call = _refused_entrypoints(graph, repository)[entrypoint]
+
+    # When / Then
+    with pytest.raises(ValueError, match="not an allowed edgeproc-core repository"):
+        call()  # type: ignore[operator]
+    assert (foundation.calls, foundation.green_calls, package.calls, history) == ([], [], [], [])
