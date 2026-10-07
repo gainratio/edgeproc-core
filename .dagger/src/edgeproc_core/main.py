@@ -21,7 +21,7 @@ DEFAULT_REPOSITORY: Final = "hseshadr/edgeproc-core"
 #: The only identities a run may claim: this repository today, and after the org transfer.
 ALLOWED_REPOSITORIES: Final = ("hseshadr/edgeproc-core", "gainratio/edgeproc-core")
 PROJECT_NAME: Final = "edgeproc-core"
-CENTRAL_MODULE_SHA: Final = "4d48302e30d3a54ec71364d43aada5c0d4b1f9bf"
+CENTRAL_MODULE_SHA: Final = "a88866232e679b6353d2b75bceb01969be739f67"
 SOURCE_EXCLUDES: Final = [
     ".git",
     ".venv",

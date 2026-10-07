@@ -16,7 +16,7 @@ from edgeproc_core.main import EdgeprocCore
 
 ROOT = Path(__file__).parents[2]
 COMMIT_SHA = "a" * 40
-EXPECTED_CENTRAL_SHA = "4d48302e30d3a54ec71364d43aada5c0d4b1f9bf"
+EXPECTED_CENTRAL_SHA = "a88866232e679b6353d2b75bceb01969be739f67"
 
 #: The repository as GitHub reports it today, and after the planned transfer to the org.
 ALLOWED = ("hseshadr/edgeproc-core", "gainratio/edgeproc-core")
