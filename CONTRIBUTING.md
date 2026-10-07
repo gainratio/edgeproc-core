@@ -13,7 +13,7 @@ Thank you for your interest in contributing to edgeproc-core! This document prov
 
 ```bash
 # Clone the repository
-git clone https://github.com/hseshadr/edgeproc-core.git
+git clone https://github.com/gainratio/edgeproc-core.git
 cd edgeproc-core
 
 # Install dependencies

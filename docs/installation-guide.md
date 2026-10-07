@@ -63,10 +63,10 @@ cannot repoint it, so it is exactly as immutable as a release:
 
 ```bash
 # uv
-uv pip install "edgeproc-core @ git+https://github.com/hseshadr/edgeproc-core.git@7b3ab4de97441ae4be64c082ae432d914d65c240"
+uv pip install "edgeproc-core @ git+https://github.com/gainratio/edgeproc-core.git@7b3ab4de97441ae4be64c082ae432d914d65c240"
 
 # pip
-python -m pip install "edgeproc-core @ git+https://github.com/hseshadr/edgeproc-core.git@7b3ab4de97441ae4be64c082ae432d914d65c240"
+python -m pip install "edgeproc-core @ git+https://github.com/gainratio/edgeproc-core.git@7b3ab4de97441ae4be64c082ae432d914d65c240"
 ```
 
 ### Why do source pins use a commit and not a tag?
@@ -110,7 +110,7 @@ Contributors should clone the repository so the lockfile and complete quality
 gate are available:
 
 ```bash
-git clone https://github.com/hseshadr/edgeproc-core.git
+git clone https://github.com/gainratio/edgeproc-core.git
 cd edgeproc-core
 uv sync --all-extras --dev
 uv run poe gate
@@ -119,7 +119,7 @@ uv run poe gate
 Installing the moving `main` branch is intentionally a development-only path:
 
 ```bash
-uv pip install git+https://github.com/hseshadr/edgeproc-core.git@main
+uv pip install git+https://github.com/gainratio/edgeproc-core.git@main
 ```
 
 ## Upgrade or reinstall
@@ -135,7 +135,7 @@ For the currently documented pin:
 
 ```bash
 uv pip install --upgrade --force-reinstall \
-  "edgeproc-core @ git+https://github.com/hseshadr/edgeproc-core.git@7b3ab4de97441ae4be64c082ae432d914d65c240"
+  "edgeproc-core @ git+https://github.com/gainratio/edgeproc-core.git@7b3ab4de97441ae4be64c082ae432d914d65c240"
 ```
 
 ## Troubleshooting
@@ -179,7 +179,7 @@ Prefer an explicit forced reinstall over clearing the entire shared `uv` cache:
 
 ```bash
 uv pip install --upgrade --force-reinstall \
-  "edgeproc-core @ git+https://github.com/hseshadr/edgeproc-core.git@7b3ab4de97441ae4be64c082ae432d914d65c240"
+  "edgeproc-core @ git+https://github.com/gainratio/edgeproc-core.git@7b3ab4de97441ae4be64c082ae432d914d65c240"
 ```
 
 The supported release line and vulnerability-reporting process are documented

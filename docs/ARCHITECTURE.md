@@ -28,17 +28,17 @@ edge-reco        store search and recommendations (browser app + Python backend)
        └─ edgeproc-core   ← this package: the vector-partitioning protocol + error codes
 ```
 
-- [edge-proc](https://github.com/hseshadr/edge-proc) (PyPI `edge-proc`) declares
+- [edge-proc](https://github.com/gainratio/edge-proc) (PyPI `edge-proc`) declares
   `edgeproc-core>=0.4.3` and implements this library's `VectorIndex` protocol over FAISS as
   `LocalVecIndex`.
-- [edge-reco](https://github.com/hseshadr/edge-reco)'s Python backend depends on `edge-proc`
+- [edge-reco](https://github.com/gainratio/edge-reco)'s Python backend depends on `edge-proc`
   and imports `edgeproc_core.vector_mgmt.core.types` directly.
 - [@edgeproc/browser](https://github.com/hseshadr/edgeproc-browser) is the TypeScript
   browser-side checker for edge-proc's signed bundles. It does not use this package.
 - [@edgeproc/errors](https://github.com/hseshadr/errors) is the TypeScript twin of
   `edgeproc_core.errors`. The 18 starter codes are identical in both, so a failure keeps one
   name across a Python backend and a TypeScript front end.
-- [privacy-core](https://github.com/hseshadr/privacy-core) (`@edgeproc/privacy-core` on npm)
+- [privacy-core](https://github.com/gainratio/privacy-core) (`@edgeproc/privacy-core` on npm)
   shares only the npm scope. It redacts personal data from AI prompts and has no code
   relationship with this package.
 
@@ -100,7 +100,7 @@ asyncio.run(demo())  # → [('a', ~0.0)]  exact match, cosine distance ≈ 0
 
 `InMemoryVectorIndex` is a reference implementation for tests and examples. In production you
 implement `VectorIndex` against your own backend. See
-[edge-proc's `LocalVecIndex`](https://github.com/hseshadr/edge-proc) for a FAISS-backed one.
+[edge-proc's `LocalVecIndex`](https://github.com/gainratio/edge-proc) for a FAISS-backed one.
 
 ## Partitioning strategies
 
@@ -312,7 +312,7 @@ tests/                  # pytest suite (≥90% branch coverage enforced)
   `InMemoryVectorIndex` is not a production store; Problem Details members are public, so never
   pass secrets as params.
 - **Verify a release:** the wheel and sdist on PyPI carry PEP 740 attestations. Check one with
-  `pypi-attestations verify pypi --repository https://github.com/hseshadr/edgeproc-core pypi:edgeproc_core-0.4.3-py3-none-any.whl`,
+  `pypi-attestations verify pypi --repository https://github.com/gainratio/edgeproc-core pypi:edgeproc_core-0.4.3-py3-none-any.whl`,
   or read `https://pypi.org/integrity/edgeproc-core/0.4.3/edgeproc_core-0.4.3-py3-none-any.whl/provenance`.
 
 To report a vulnerability, see [SECURITY.md](../SECURITY.md).

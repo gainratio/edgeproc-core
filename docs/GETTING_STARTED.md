@@ -24,7 +24,7 @@ Known traps:
 ## 2. Clone, install, run the tests
 
 ```bash
-git clone https://github.com/hseshadr/edgeproc-core.git
+git clone https://github.com/gainratio/edgeproc-core.git
 cd edgeproc-core
 uv sync
 ```

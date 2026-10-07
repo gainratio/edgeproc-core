@@ -167,7 +167,7 @@ def test_should_fetch_only_hosted_identity_fields(
     monkeypatch.setattr(contract, "urlopen", lambda *_args, **_kwargs: next(responses))
 
     # When
-    payload = contract.fetch_hosted_payload("hseshadr/edgeproc-core", SHA, "v1.2.3", "token")
+    payload = contract.fetch_hosted_payload("gainratio/edgeproc-core", SHA, "v1.2.3", "token")
 
     # Then
     contract.validate_hosted_eligibility(payload, SHA)

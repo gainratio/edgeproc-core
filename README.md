@@ -4,9 +4,9 @@ A Python library that keeps each customer's search results separate in a shared 
 
 **Python 3.13 or newer: `pip install edgeproc-core`**
 
-[![CI](https://github.com/hseshadr/edgeproc-core/actions/workflows/dagger.yml/badge.svg)](https://github.com/hseshadr/edgeproc-core/actions/workflows/dagger.yml)
+[![CI](https://github.com/gainratio/edgeproc-core/actions/workflows/dagger.yml/badge.svg)](https://github.com/gainratio/edgeproc-core/actions/workflows/dagger.yml)
 [![PyPI](https://img.shields.io/pypi/v/edgeproc-core)](https://pypi.org/project/edgeproc-core/)
-[![License](https://img.shields.io/github/license/hseshadr/edgeproc-core)](LICENSE)
+[![License](https://img.shields.io/github/license/gainratio/edgeproc-core)](LICENSE)
 
 Many apps have a "find similar" or document search feature that all their customers share.
 Each item is stored as a list of numbers (an embedding) in an index built for that kind of
@@ -84,12 +84,12 @@ module is separate: `classify` maps a raw failure to a code, `describe` turns th
 and `to_problem_details` turns it into the JSON an API returns.
 
 It is the bottom layer of a few related projects by the same author.
-[edge-proc](https://github.com/hseshadr/edge-proc), also on PyPI, depends on this package: it
+[edge-proc](https://github.com/gainratio/edge-proc), also on PyPI, depends on this package: it
 implements the `VectorIndex` protocol with FAISS and adds shipping signed data to devices.
-[edge-reco](https://github.com/hseshadr/edge-reco), an in-browser store search demo, uses both
+[edge-reco](https://github.com/gainratio/edge-reco), an in-browser store search demo, uses both
 in its Python backend. [@edgeproc/browser](https://github.com/hseshadr/edgeproc-browser) checks
 edge-proc's signed data inside a web page and does not use this package.
-[privacy-core](https://github.com/hseshadr/privacy-core) only shares the `@edgeproc` npm name;
+[privacy-core](https://github.com/gainratio/privacy-core) only shares the `@edgeproc` npm name;
 it hides personal data from AI prompts and is unrelated. The error codes match the TypeScript
 package [@edgeproc/errors](https://github.com/hseshadr/errors).
 
@@ -115,7 +115,7 @@ package [@edgeproc/errors](https://github.com/hseshadr/errors).
 | --- | --- |
 | Have a few large customers and can afford an index each | One index per customer |
 | Are committed to one vector database and happy with its own namespaces | That database's built-in multi-tenancy |
-| Need search that runs on devices, with signed downloads | [edge-proc](https://github.com/hseshadr/edge-proc), which builds on this |
+| Need search that runs on devices, with signed downloads | [edge-proc](https://github.com/gainratio/edge-proc), which builds on this |
 | Want one partitioning scheme that works across FAISS, pgvector, hnswlib and tests, with a test proving the filter is applied | edgeproc-core |
 
 ## Install
@@ -143,7 +143,7 @@ To install from source with a pinned commit, see the [installation guide](docs/i
 ## Develop
 
 ```bash
-git clone https://github.com/hseshadr/edgeproc-core.git
+git clone https://github.com/gainratio/edgeproc-core.git
 cd edgeproc-core
 uv sync
 uv run poe gate
