@@ -17,6 +17,8 @@ from edgeproc_core.main import EdgeprocCore
 ROOT = Path(__file__).parents[2]
 COMMIT_SHA = "a" * 40
 EXPECTED_CENTRAL_SHA = "a88866232e679b6353d2b75bceb01969be739f67"
+#: The shared CI repo moved hseshadr/ci -> gainratio/ci (2026-10); pin the new owner exactly.
+CENTRAL_CI = "github.com/gainratio/ci"
 
 #: The repository as GitHub reports it since the org transfer, and its pre-transfer name.
 CANONICAL = "gainratio/edgeproc-core"
@@ -319,11 +321,11 @@ def test_should_pin_both_shared_modules_to_same_reviewed_commit() -> None:
     assert set(dependencies) == {"foundation", "python-package"}
     assert main.CENTRAL_MODULE_SHA == EXPECTED_CENTRAL_SHA
     assert {item["pin"] for item in dependencies.values()} == {EXPECTED_CENTRAL_SHA}
-    assert dependencies["foundation"]["source"].endswith(
-        f"/modules/portfolio-foundation@{EXPECTED_CENTRAL_SHA}"
+    assert dependencies["foundation"]["source"] == (
+        f"{CENTRAL_CI}/modules/portfolio-foundation@{EXPECTED_CENTRAL_SHA}"
     )
-    assert dependencies["python-package"]["source"].endswith(
-        f"/modules/python-package@{EXPECTED_CENTRAL_SHA}"
+    assert dependencies["python-package"]["source"] == (
+        f"{CENTRAL_CI}/modules/python-package@{EXPECTED_CENTRAL_SHA}"
     )
 
 
