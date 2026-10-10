@@ -21,7 +21,7 @@ GIT_PACKAGE: Final = "git=1:2.47.3-0+deb13u1"
 #: `github.repository`, so a caller that drops the flag fails instead of gating as a guess.
 ALLOWED_REPOSITORIES: Final = ("gainratio/edgeproc-core", "hseshadr/edgeproc-core")
 PROJECT_NAME: Final = "edgeproc-core"
-CENTRAL_MODULE_SHA: Final = "a88866232e679b6353d2b75bceb01969be739f67"
+CENTRAL_MODULE_SHA: Final = "528eaec76121b75810c58bab610d9f2064b95227"
 SOURCE_EXCLUDES: Final = [
     ".git",
     ".venv",
