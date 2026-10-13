@@ -16,7 +16,7 @@ from edgeproc_core.main import EdgeprocCore
 
 ROOT = Path(__file__).parents[2]
 COMMIT_SHA = "a" * 40
-EXPECTED_CENTRAL_SHA = "fbc02232928fbca80da1013e9e1676a3e41424a6"
+EXPECTED_CENTRAL_SHA = "8420264d5560b0817579d9c5323ae3a69ce4558d"
 #: The shared CI repo moved hseshadr/ci -> gainratio/ci (2026-10); pin the new owner exactly.
 CENTRAL_CI = "github.com/gainratio/ci"
 
