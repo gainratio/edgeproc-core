@@ -20,6 +20,10 @@ updates:
 
   - package-ecosystem: "uv"
     directory: "/"
+    # .dagger/ holds the Dagger module; its `dagger-io` path dependency is a generated,
+    # gitignored SDK the updater cannot fetch (it aborted with "could not be retrieved").
+    exclude-paths:
+      - ".dagger/**"
     schedule:
       interval: "monthly"
     cooldown:
