@@ -87,11 +87,11 @@ It is the bottom layer of a few related projects by the same author.
 [edge-proc](https://github.com/gainratio/edge-proc), also on PyPI, depends on this package: it
 implements the `VectorIndex` protocol with FAISS and adds shipping signed data to devices.
 [edge-reco](https://github.com/gainratio/edge-reco), an in-browser store search demo, uses both
-in its Python backend. [@edgeproc/browser](https://github.com/hseshadr/edgeproc-browser) checks
-edge-proc's signed data inside a web page and does not use this package.
-[privacy-core](https://github.com/gainratio/privacy-core) only shares the `@edgeproc` npm name;
-it hides personal data from AI prompts and is unrelated. The error codes match the TypeScript
-package [@edgeproc/errors](https://github.com/hseshadr/errors).
+in its Python backend. [@gainratio/browser](https://github.com/gainratio/edgeproc-browser)
+(previously `@edgeproc/browser`) checks edge-proc's signed data inside a web page and does not
+use this package. [privacy-core](https://github.com/gainratio/privacy-core) only shares the
+`@edgeproc` npm name; it hides personal data from AI prompts and is unrelated. The error codes
+match the TypeScript package [@gainratio/errors](https://github.com/gainratio/errors).
 
 ## What it does not do
 

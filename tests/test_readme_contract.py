@@ -133,8 +133,16 @@ def test_should_show_real_output_in_try_it() -> None:
 
 
 def test_should_explain_how_it_relates_to_the_sibling_projects() -> None:
-    for sibling in ("edge-proc", "edge-reco", "@edgeproc/browser", "privacy-core"):
+    for sibling in (
+        "edge-proc",
+        "edge-reco",
+        "@gainratio/browser",
+        "@edgeproc/browser",
+        "privacy-core",
+        "@gainratio/errors",
+    ):
         assert sibling in README, f"README does not say how it relates to {sibling}"
+    assert "github.com/hseshadr/" not in README
 
 
 def test_should_state_beta_at_the_released_version_while_pre_1_0() -> None:
