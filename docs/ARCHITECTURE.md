@@ -33,12 +33,12 @@ edge-reco        store search and recommendations (browser app + Python backend)
   `LocalVecIndex`.
 - [edge-reco](https://github.com/gainratio/edge-reco)'s Python backend depends on `edge-proc`
   and imports `edgeproc_core.vector_mgmt.core.types` directly.
-- [@edgeproc/browser](https://github.com/hseshadr/edgeproc-browser) is the TypeScript
+- [@gainratio/browser](https://github.com/gainratio/edgeproc-browser) is the TypeScript
   browser-side checker for edge-proc's signed bundles. It does not use this package.
-- [@edgeproc/errors](https://github.com/hseshadr/errors) is the TypeScript twin of
+- [@gainratio/errors](https://github.com/gainratio/errors) is the TypeScript twin of
   `edgeproc_core.errors`. The 18 starter codes are identical in both, so a failure keeps one
   name across a Python backend and a TypeScript front end.
-- [privacy-core](https://github.com/gainratio/privacy-core) (`@edgeproc/privacy-core` on npm)
+- [privacy-core](https://github.com/gainratio/privacy-core) (`@gainratio/privacy-core` on npm)
   shares only the npm scope. It redacts personal data from AI prompts and has no code
   relationship with this package.
 
@@ -233,7 +233,7 @@ registry.to_problem_details("net.unreachable").to_dict()
 
 `starter_pack` covers the common provider / config / network / timeout / device / integrity /
 internal cases so you need not re-declare them; `define_errors` rejects a duplicate code at
-registration. The codes match the TypeScript `@edgeproc/errors` package.
+registration. The codes match the TypeScript `@gainratio/errors` package.
 
 Runnable demo: [`examples/canonical_errors.py`](../examples/canonical_errors.py).
 
@@ -290,7 +290,7 @@ tests/                  # pytest suite (≥90% branch coverage enforced)
 | One index per customer | you have a few large customers and can afford an index each | you have thousands to millions of owners, where per-owner indexes waste memory and startup time |
 | Your vector store's own namespaces or multi-tenancy | you are committed to that one store | you want the partitioning scheme to stay portable across FAISS, pgvector, hnswlib and tests |
 | A hand-rolled "global index + metadata filter" | you only ever need that one scheme | you want to move to buckets or hot/cold tiers without rewriting callers, and a conformance suite that proves the filter is applied |
-| Per-layer error `if` ladders | the app is tiny | the same failure must mean the same thing in the API, the UI and the logs (and in TypeScript, via `@edgeproc/errors`) |
+| Per-layer error `if` ladders | the app is tiny | the same failure must mean the same thing in the API, the UI and the logs (and in TypeScript, via `@gainratio/errors`) |
 
 ## Security and trust model
 

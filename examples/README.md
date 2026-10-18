@@ -27,20 +27,20 @@ This directory contains example usage patterns for edgeproc-core.
 ## Running Examples
 
 ```bash
-# Install the library first
-cd ~/dev/edgeproc-core
-uv pip install -e .
+# From the repository root:
+uv sync
+uv run python examples/basic_usage.py
 
-# Run an example
-python examples/basic_usage.py
+# Or run all examples at once:
+bash examples/run_loop.sh
 ```
 
 ## Note
 
-These examples use mock index factories. In production, you'll need to:
+These examples use the bundled `in_memory_factory` reference index. In production, you'll need to:
 
 1. Implement the `VectorIndex` protocol for your vector database
-2. Replace `create_mock_index` with your actual index factory
+2. Replace `in_memory_factory` with your actual index factory
 3. Handle database connections and configuration
 
 See the main [README.md](../README.md) for more details.

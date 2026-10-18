@@ -657,5 +657,5 @@ in [`OPERATIONS.md`](OPERATIONS.md).
 **Last Updated**: 2026-07-15
 **Status**: Consumer architecture guidance; shipped code is the typed partitioning protocol
 
-**Library**: `~/dev/edgeproc-core`
+**Library**: [`edgeproc-core`](https://github.com/gainratio/edgeproc-core)
 **Package**: `edgeproc_core.vector_mgmt`

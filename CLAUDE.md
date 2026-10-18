@@ -124,7 +124,7 @@ security principal.
 ### Canonical Errors (`errors/`)
 
 A second, independent module — unrelated to vector search, and roughly 44% of
-production code. The Python mirror of the TS `@edgeproc/errors` package, so a
+production code. The Python mirror of the TS `@gainratio/errors` package, so a
 failure keeps one stable identity on both sides of the portfolio.
 
 ```python

@@ -12,7 +12,7 @@ codes (or reuse the bundled `starter_pack` of 18 universal ones), then:
 - `describe(code)` — a code -> human text, through your own i18n if you have one
 - `to_problem_details(code).to_dict()` -> the RFC 9457 JSON shape for an API
 
-The codes are identical to the TypeScript `@edgeproc/errors` package, so a
+The codes are identical to the TypeScript `@gainratio/errors` package, so a
 failure keeps the same identity on both sides of a stack.
 """
 
