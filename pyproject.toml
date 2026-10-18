@@ -71,7 +71,7 @@ Issues = "https://github.com/gainratio/edgeproc-core/issues"
 packages = ["edgeproc_core"]
 
 [tool.hatch.build.targets.sdist]
-# Lean sdist: distribution sources only. The ~5 MB of rendered PNG diagrams under
+# Lean sdist: distribution sources only. Extended architecture docs under
 # docs/, the resolved uv.lock, and dev-only tooling (.github, .claude, CLAUDE.md)
 # live in the git repo — they have no place in the published tarball.
 only-include = [

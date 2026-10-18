@@ -57,7 +57,7 @@ From a fresh clone it took 45 seconds; later runs take about 15. Success looks l
 
 ```text
 Required test coverage of 90% reached. Total coverage: 99.32%
-============================= 380 passed in 15.00s =============================
+============================= 381 passed in 15.00s =============================
 ...
 OK: ARCHITECTURE.md coverage claims match the measured run.
 ...
@@ -134,7 +134,7 @@ loop, so the walk is bounded).
 
 Run the file again until it is green, then `uv run poe gate`. Add a line under `[Unreleased]` in
 [CHANGELOG.md](../CHANGELOG.md). Before opening a PR for a change like this one, check the
-TypeScript twin, [@edgeproc/errors](https://github.com/hseshadr/errors): the error codes and
+TypeScript twin, [@gainratio/errors](https://github.com/gainratio/errors): the error codes and
 their matching rules are meant to behave the same in both languages.
 
 ## 6. Open a pull request

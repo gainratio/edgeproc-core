@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Documentation
+- Align sibling links and package scopes across `docs/ARCHITECTURE.md`, `docs/GETTING_STARTED.md`, `docs/vector-mgmt-architecture.md`, `examples/README.md`, `examples/canonical_errors.py`, and `CLAUDE.md` with `gainratio` and `@gainratio/{browser,errors,privacy-core}`, and widen `test_no_public_surface_names_the_pre_transfer_owner` to guard every `github.com/hseshadr/` URL across `OWNED_SURFACES`.
+
 ### Fixed
 - **`http_status_of` now follows a nested `response`.** Exceptions such as `requests.HTTPError`
   and `httpx.HTTPStatusError` keep the status at `exc.response.status_code`, so

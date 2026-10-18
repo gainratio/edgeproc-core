@@ -255,8 +255,8 @@ OWNED_SURFACES = (
 
 
 def test_no_public_surface_names_the_pre_transfer_owner() -> None:
-    """The repository moved to `gainratio`; every shipped URL must say so."""
-    stale = f"{STALE_OWNER}/{REPO_SLUG}"
+    """The repository and sibling links moved to `gainratio`; every shipped URL must say so."""
+    stale = f"github.com/{STALE_OWNER}/"
     offenders = [doc for doc in OWNED_SURFACES if stale in _read(doc)]
 
     assert not offenders, f"{offenders} still name {stale}; use {CANONICAL_REPOSITORY}."
