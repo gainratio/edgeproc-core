@@ -145,13 +145,13 @@ class TestBucketedPartitionStrategy:
 
     @pytest.mark.asyncio
     async def test_get_search_partitions_none_key(self, mock_index_factory) -> None:
-        """Test that None partition key goes to bucket 0."""
+        """An unscoped call reaches every bucket, not just bucket 0."""
         strategy = BucketedPartitionStrategy(
             index_factory=mock_index_factory,
-            num_buckets=256,
+            num_buckets=8,
         )
         partitions = strategy.get_search_partitions(None)
-        assert partitions == ["bucket_0"]
+        assert partitions == [f"bucket_{i}" for i in range(8)]
 
     @pytest.mark.asyncio
     async def test_get_index_creates_per_bucket(self, mock_index_factory) -> None:
