@@ -320,9 +320,9 @@ To report a vulnerability, see [SECURITY.md](../SECURITY.md).
 ## What the tests prove
 
 The hosted CI run and the full local check (`uv run poe gate`) pass at
-**99.32% coverage measured with branches enabled**, with strict mypy, lint, and formatting.
+**99.10% coverage measured with branches enabled**, with strict mypy, lint, and formatting.
 The check runs `--cov-branch` and enforces a ≥90% branch coverage floor. Split into its two
-parts: 99.14% of statements and 100.00% of branches are covered. A step in `poe gate`
+parts: 99.00% of statements and 99.45% of branches are covered. A step in `poe gate`
 ([`scripts/check_coverage_claim.py`](../scripts/check_coverage_claim.py)) re-derives all three
 figures from `coverage.xml`, so this paragraph cannot quietly drift.
 
