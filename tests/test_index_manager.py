@@ -214,8 +214,8 @@ class TestIndexManager:
         ]
         await manager.insert(embeddings, partition_key="t1")
         await manager.delete(["e1"], partition_key="t1")
-        stats = await manager.get_stats()
-        # Should search in correct bucket
+        stats = await manager.get_stats(partition_key="t1")
+        # A scoped read stays in the one bucket t1 routes to.
         assert len(stats) == 1
 
     @pytest.mark.asyncio

@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Align sibling links and package scopes across `docs/ARCHITECTURE.md`, `docs/GETTING_STARTED.md`, `docs/vector-mgmt-architecture.md`, `examples/README.md`, `examples/canonical_errors.py`, and `CLAUDE.md` with `gainratio` and `@gainratio/{browser,errors,privacy-core}`, and widen `test_no_public_surface_names_the_pre_transfer_owner` to guard every `github.com/hseshadr/` URL across `OWNED_SURFACES`.
 
 ### Fixed
+- **An unscoped `search`, `delete`, or `get_stats` now reaches every bucket.** Under the
+  default 256-bucket strategy, `get_search_partitions(None)` returned `bucket_0` only, so an
+  unscoped administrative delete removed 1/256 of the requested rows and reported success
+  (and an unscoped search missed everything outside bucket 0). A scoped key still routes to
+  its single bucket; only the no-key admin path fans out. Regression:
+  `tests/test_partition_key_round_trip.py`.
 - **`http_status_of` now follows a nested `response`.** Exceptions such as `requests.HTTPError`
   and `httpx.HTTPStatusError` keep the status at `exc.response.status_code`, so
   `Registry.classify` never saw it. A status on the object itself still wins, the walk stops
