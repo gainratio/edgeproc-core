@@ -71,12 +71,12 @@ Issues = "https://github.com/gainratio/edgeproc-core/issues"
 packages = ["edgeproc_core"]
 
 [tool.hatch.build.targets.sdist]
-# Lean sdist: distribution sources only. Extended architecture docs under
-# docs/, the resolved uv.lock, and dev-only tooling (.github, .claude, CLAUDE.md)
-# live in the git repo — they have no place in the published tarball.
+# Lean sdist: distribution sources only. The test suite is deliberately not
+# shipped: it reads .github/, docs/, scripts/ and dagger.json, none of which
+# belong in the published tarball, so an sdist-run suite would fail on missing
+# fixtures. Extended docs, uv.lock and dev tooling live in the git repo.
 only-include = [
     "edgeproc_core",
-    "tests",
     "examples",
     "benchmarks",
     "README.md",
