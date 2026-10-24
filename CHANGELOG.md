@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (and an unscoped search missed everything outside bucket 0). A scoped key still routes to
   its single bucket; only the no-key admin path fans out. Regression:
   `tests/test_partition_key_round_trip.py`.
+- **The sdist no longer ships a test suite it cannot run.** `only-include` shipped
+  `tests/`, but the suite reads `.github/`, `docs/`, `scripts/` and `dagger.json`, all of
+  which the sdist excludes, so `pytest` from the extracted archive failed on missing
+  fixtures. The published tarball now carries distribution sources only.
 - **`http_status_of` now follows a nested `response`.** Exceptions such as `requests.HTTPError`
   and `httpx.HTTPStatusError` keep the status at `exc.response.status_code`, so
   `Registry.classify` never saw it. A status on the object itself still wins, the walk stops
