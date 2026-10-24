@@ -223,3 +223,31 @@ def test_bucketed_get_partitions_still_routes_an_unkeyed_row_by_the_argument() -
 
     assert list(partitions) == expected
     assert [emb.entity_id for emb in partitions[expected[0]]] == ["orphan"]
+
+
+async def test_should_reach_every_bucket_on_an_unscoped_admin_delete() -> None:
+    """An unscoped call is the admin path: it must not silently stop at bucket 0.
+
+    A regression here is invisible: the delete returns success and the scoped
+    reads stay empty, while rows in the other buckets are still there.
+    """
+    strategy = BucketedPartitionStrategy(index_factory=in_memory_factory, num_buckets=8)
+    manager = IndexManager(partition_strategy=strategy)
+
+    by_bucket: dict[str, list[str]] = {}
+    for i in range(100):
+        key = f"tenant-{i}"
+        by_bucket.setdefault(strategy.get_search_partitions(key)[0], []).append(key)
+        if len(by_bucket) >= 2:
+            break
+    keys = [bucket_keys[0] for bucket_keys in list(by_bucket.values())[:2]]
+    assert len(keys) == 2, "non-vacuity: two distinct buckets are required"
+
+    for i, key in enumerate(keys):
+        await manager.insert([_orphan(f"row-{i}")], partition_key=key)
+
+    assert await _ids(manager, None) == ["row-0", "row-1"]
+
+    await manager.delete(["row-0", "row-1"])
+
+    assert await _ids(manager, None) == []

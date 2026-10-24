@@ -148,7 +148,16 @@ class BucketedPartitionStrategy(PartitionStrategy):
         return buckets
 
     def get_search_partitions(self, partition_key: str | None = None) -> list[str]:
-        """Return the single bucket ``partition_key`` hashes into."""
+        """Return the partitions to search for ``partition_key``.
+
+        A scoped call returns the single bucket the key hashes into. An unscoped
+        call (``None``) is the administrative path: it must reach every bucket,
+        not only ``bucket_0``, or an unscoped search/delete silently operates on
+        1/``num_buckets`` of the rows. Insertion of an unkeyed row still routes
+        to ``bucket_0``; unscoped reads now include it with the rest.
+        """
+        if partition_key is None:
+            return [self._get_partition_name(i) for i in range(self.num_buckets)]
         return [self._get_partition_name(self._get_bucket_id(partition_key))]
 
     async def get_index(self, partition_name: str) -> VectorIndex:
