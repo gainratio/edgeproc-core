@@ -12,6 +12,18 @@ license = {text = "MIT"}
 authors = [
     {name = "Harish Seshadri", email = "harish.seshadri@gmail.com"}
 ]
+keywords = [
+    "multi-tenant",
+    "vector-search",
+    "tenant-isolation",
+    "partitioning",
+    "pgvector",
+    "error-codes",
+    "problem-details",
+    "rfc-9457",
+    "hybrid-search",
+    "rag",
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
